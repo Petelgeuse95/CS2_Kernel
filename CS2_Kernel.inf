@@ -1,0 +1,77 @@
+;
+; CS2_Kernel.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=CS2_Kernel.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+CS2_Kernel_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+CS2_Kernel.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%CS2_Kernel.DeviceDesc%=CS2_Kernel_Device, Root\CS2_Kernel ; TODO: edit hw-id
+
+[CS2_Kernel_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+CS2_Kernel.sys
+
+;-------------- Service installation
+[CS2_Kernel_Device.NT.Services]
+AddService = CS2_Kernel,%SPSVCINST_ASSOCSERVICE%, CS2_Kernel_Service_Inst
+
+; -------------- CS2_Kernel driver install sections
+[CS2_Kernel_Service_Inst]
+DisplayName    = %CS2_Kernel.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\CS2_Kernel.sys
+
+;
+;--- CS2_Kernel_Device Coinstaller installation ------
+;
+
+[CS2_Kernel_Device.NT.CoInstallers]
+AddReg=CS2_Kernel_Device_CoInstaller_AddReg
+CopyFiles=CS2_Kernel_Device_CoInstaller_CopyFiles
+
+[CS2_Kernel_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[CS2_Kernel_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[CS2_Kernel_Device.NT.Wdf]
+KmdfService =  CS2_Kernel, CS2_Kernel_wdfsect
+[CS2_Kernel_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "CS2_Kernel Installation Disk"
+CS2_Kernel.DeviceDesc = "CS2_Kernel Device"
+CS2_Kernel.SVCDESC = "CS2_Kernel Service"
